@@ -59,7 +59,7 @@ int writefile(const char* volume, int argc, char** argv)
         size_t size = fstat.st_size;
         char* buffer = (char*)malloc(size);
         FILE* file = fopen(filename, "r");
-        fread(buffer, 11, size, file);
+        fread(buffer, 1, size, file);
         SIFS_writefile(volume, argv[3], buffer, size);
         SIFS_perror(NULL);
         free(buffer);
