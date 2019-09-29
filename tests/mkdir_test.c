@@ -120,7 +120,7 @@ void test_error_SIFS_ENOTVOL(void)
 {
 	printf("RUNNING TEST ERROR ENOTVOL\n");
 
-	int i = SIFS_mkdir("mkdir_test.c", "DIR");
+	int i = SIFS_mkdir("tests/mkdir_test.c", "DIR");
 	if (i == 1 && SIFS_errno == SIFS_ENOTVOL)
 	{
 		printf("TEST PASSED\n");

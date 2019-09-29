@@ -9,26 +9,19 @@ int SIFS_fileinfo(const char *volumename, const char *pathname,
         SIFS_errno = SIFS_EINVAL;
         return 1;
     }
-    void* volume = SIFS_readvolume(volumename, NULL);
-    if (volume == NULL)
-    {
-        return 1;
-    }
 
     size_t count;
     char** result = strsplit(pathname, SIFS_DIR_DELIMETER, &count);
     if (result == NULL)
     {
-        free(volume);
         SIFS_errno = SIFS_ENOMEM;
         return 1;
     }
 
-    SIFS_FILEBLOCK* fileblock = SIFS_getfile(volume, result, count, NULL);
+    SIFS_FILEBLOCK* fileblock = SIFS_getfile(volumename, result, count, NULL);
     if (fileblock == NULL)
     {
         freesplit(result);
-        free(volume);
         return 1;
     }
     if (length != NULL)
@@ -41,7 +34,7 @@ int SIFS_fileinfo(const char *volumename, const char *pathname,
     }
 
     freesplit(result);
-    free(volume);
+    free(fileblock);
     SIFS_errno = SIFS_EOK;
     return 0;
 }

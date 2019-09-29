@@ -10,17 +10,11 @@ int SIFS_writefile(const char *volumename, const char *pathname,
         SIFS_errno = SIFS_EINVAL;
         return 1;
     }
-    void* volume = SIFS_readvolume(volumename, NULL);
-    if (volume == NULL)
-    {
-        return 1;
-    }
 
     size_t count;
     char** result = strsplit(pathname, SIFS_DIR_DELIMETER, &count);
     if (result == NULL)
     {
-        free(volume);
         SIFS_errno = SIFS_ENOMEM;
         return 1;
     }
@@ -29,31 +23,29 @@ int SIFS_writefile(const char *volumename, const char *pathname,
     if (filenameLength == 0 || filenameLength >= SIFS_MAX_NAME_LENGTH)
     {
         freesplit(result);
-        free(volume);
         SIFS_errno = SIFS_EINVAL;
         return 1;
     }
 
     // Find directory to place file in
-    SIFS_DIRBLOCK* dir = SIFS_getdir(volume, result, count - 1);
+    SIFS_BLOCKID dirblockId;
+    SIFS_DIRBLOCK* dir = SIFS_getdir(volumename, result, count - 1, &dirblockId);
     if (dir == NULL)
     {
         freesplit(result);
-        free(volume);
-        SIFS_errno = SIFS_ENOTDIR;
         return 1;
     }
     if (dir->nentries >= SIFS_MAX_ENTRIES)
     {
         freesplit(result);
-        free(volume);
+        free(dir);
         SIFS_errno = SIFS_EMAXENTRY;
         return 1;
     }
-    if (SIFS_hasentry(volume, dir, filename))
+    if (SIFS_hasentry(volumename, dir, filename))
     {
         freesplit(result);
-        free(volume);
+        free(dir);
         SIFS_errno = SIFS_EEXIST;
         return 1;
     }
@@ -61,41 +53,43 @@ int SIFS_writefile(const char *volumename, const char *pathname,
     unsigned char md5[MD5_BYTELEN];
     MD5_buffer(data, nbytes, md5);
     SIFS_BLOCKID blockId;
-    SIFS_FILEBLOCK* block = SIFS_getfileblock(volume, md5, &blockId);
+    SIFS_FILEBLOCK* block = SIFS_getfileblock(volumename, md5, &blockId);
     if (block != NULL)
     {
         if (block->nfiles >= SIFS_MAX_ENTRIES)
         {
             freesplit(result);
-            free(volume);
+            free(dir);
+            free(block);
             SIFS_errno = SIFS_EMAXENTRY;
             return 1;
         }
     }
     else
     {
-        SIFS_VOLUME_HEADER* header = SIFS_getvolumeheader(volume);
+        SIFS_VOLUME_HEADER* header = SIFS_getvolumeheader(volumename);
         int nblocks = nbytes / header->blocksize + ((nbytes % header->blocksize == 0) ? 0 : 1);
-        SIFS_BLOCKID fileblockId = SIFS_allocateblocks(volume, 1, SIFS_FILE);
-        SIFS_BLOCKID datablockId = SIFS_allocateblocks(volume, nblocks, SIFS_DATABLOCK);
+        SIFS_BLOCKID fileblockId = SIFS_allocateblocks(volumename, 1, SIFS_FILE);
+        SIFS_BLOCKID datablockId = SIFS_allocateblocks(volumename, nblocks, SIFS_DATABLOCK);
         if (fileblockId == SIFS_ROOTDIR_BLOCKID || datablockId == SIFS_ROOTDIR_BLOCKID)
         {
             freesplit(result);
-            free(volume);
+            free(dir);
+            free(header);
             SIFS_errno = SIFS_ENOSPC;
             if (fileblockId != SIFS_ROOTDIR_BLOCKID)
             {
-                SIFS_freeblocks(volume, fileblockId, 1);
+                SIFS_freeblocks(volumename, fileblockId, 1);
             }
             if (datablockId != SIFS_ROOTDIR_BLOCKID)
             {
-                SIFS_freeblocks(volume, datablockId, nblocks);
+                SIFS_freeblocks(volumename, datablockId, nblocks);
             }
             return 1;
         }
-        void* dataPtr = SIFS_getblock(volume, datablockId);
+        void* dataPtr = SIFS_getblocks(volumename, datablockId, nblocks);
         memcpy(dataPtr, data, nbytes);
-        SIFS_FILEBLOCK* fileblock = (SIFS_FILEBLOCK*)SIFS_getblock(volume, fileblockId);
+        SIFS_FILEBLOCK* fileblock = (SIFS_FILEBLOCK*)SIFS_getblock(volumename, fileblockId);
         fileblock->modtime = time(NULL);
         memcpy(fileblock->md5, md5, MD5_BYTELEN);
         fileblock->length = nbytes;
@@ -103,14 +97,19 @@ int SIFS_writefile(const char *volumename, const char *pathname,
         fileblock->nfiles = 0;
         block = fileblock;
         blockId = fileblockId;
+        SIFS_updateblock(volumename, datablockId, dataPtr, nbytes);
+        free(dataPtr);
     }
     memcpy(block->filenames[block->nfiles++], filename, filenameLength);
     dir->entries[dir->nentries].blockID = blockId;
     dir->entries[dir->nentries++].fileindex = block->nfiles - 1;
 
+    SIFS_updateblock(volumename, dirblockId, dir, 0);
+    SIFS_updateblock(volumename, blockId, block, 0);
+
     freesplit(result);
-    SIFS_rewritevolume(volumename, volume);
-    free(volume);
+    free(dir);
+    free(block);
     SIFS_errno = SIFS_EOK;
     return 0;
 }

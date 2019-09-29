@@ -16,6 +16,7 @@ void test_rmdir_ENOVOL(void)
     else
     {
         printf("TEST FAILED\n");
+        SIFS_perror(NULL);
     }
 }
 
