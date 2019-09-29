@@ -39,6 +39,7 @@ int dirinfo(const char* volume, int argc, char** argv)
     time_t modtime;
     int result = SIFS_dirinfo(volume, argv[2], &entries, &nentries, &modtime);
     SIFS_perror(NULL);
+    printf("Modified %li seconds ago\n", time(NULL) - modtime);
     if (result == 0)
     {
         printf("Directory %s\n", argv[2]);
@@ -89,6 +90,7 @@ int fileinfo(const char* volume, int argc, char** argv)
     SIFS_fileinfo(volume, argv[2], &length, &modtime);
     SIFS_perror(NULL);
     printf("Length %li\n", length);
+    printf("Modified %li seconds ago\n", time(NULL) - modtime);
     return 0;
 }
 

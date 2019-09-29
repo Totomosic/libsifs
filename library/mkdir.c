@@ -19,6 +19,19 @@ int SIFS_mkdir(const char *volumename, const char *dirname)
         SIFS_errno = SIFS_ENOMEM;
         return 1;
     }
+    if (dircount == 0)
+    {
+        SIFS_errno = SIFS_EINVAL;
+        freesplit(dirnames);
+        return 1;
+    }
+    char* newdirname = dirnames[dircount - 1];
+    if (*newdirname == '.')
+    {
+        SIFS_errno = SIFS_EINVAL;
+        freesplit(dirnames);
+        return 1;
+    }
 
     SIFS_BLOCKID dirblockId;
     SIFS_DIRBLOCK* dirblock = SIFS_getdir(volumename, dirnames, dircount - 1, &dirblockId);
@@ -34,7 +47,7 @@ int SIFS_mkdir(const char *volumename, const char *dirname)
         SIFS_errno = SIFS_EMAXENTRY;
         return 1;
     }
-    if (SIFS_hasentry(volumename, dirblock, dirnames[dircount - 1]))
+    if (SIFS_hasentry(volumename, dirblock, newdirname))
     {
         freesplit(dirnames);
         free(dirblock);
@@ -52,7 +65,7 @@ int SIFS_mkdir(const char *volumename, const char *dirname)
     dirblock->modtime = time(NULL);
     dirblock->entries[dirblock->nentries++].blockID = newBlockId;
     SIFS_DIRBLOCK* newBlock = (SIFS_DIRBLOCK*)SIFS_getblock(volumename, newBlockId);
-    memcpy(newBlock->name, dirnames[dircount - 1], strlen(dirnames[dircount - 1]) + 1);
+    memcpy(newBlock->name, newdirname, strlen(newdirname) + 1);
     newBlock->modtime = dirblock->modtime;
     newBlock->nentries = 0;
 

@@ -40,6 +40,15 @@ int SIFS_dirinfo(const char *volumename, const char *pathname,
             memcpy(entries[i], dirblock->name, length + 1);
             free(dirblock);
         }
+        else
+        {
+            SIFS_FILEBLOCK* fileblock = (SIFS_FILEBLOCK*)SIFS_getblock(volumename, dir->entries[i].blockID);
+            char* filename = fileblock->filenames[dir->entries[i].fileindex];
+            size_t length = strlen(filename);
+            entries[i] = (char*)malloc(length + 1);
+            memcpy(entries[i], filename, length + 1);
+            free(fileblock);
+        }
     }
     *entrynames = entries;
 

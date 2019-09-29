@@ -404,7 +404,6 @@ SIFS_FILEBLOCK* SIFS_getfileblock(const char* volumename, const void* md5, SIFS_
                 {
                     *outBlockid = i;
                 }
-                free(block);
                 free(header);
                 free(bitmap);
                 return block;

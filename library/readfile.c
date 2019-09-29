@@ -1,5 +1,6 @@
 #include "sifsutils.h"
 #include <string.h>
+#include <stdio.h>
 
 // read the contents of an existing file from an existing volume
 int SIFS_readfile(const char *volumename, const char *pathname,

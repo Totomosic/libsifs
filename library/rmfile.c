@@ -78,12 +78,20 @@ int SIFS_rmfile(const char *volumename, const char *pathname)
             SIFS_DIRBLOCK* dirblock = (SIFS_DIRBLOCK*)SIFS_getblock(volumename, i);
             for (int j = 0; j < dirblock->nentries; j++)
             {
-                if (dirblock->entries[j].blockID == blockId && dirblock->entries[j].fileindex > fileIndex)
+                if (i != dirblockId && dirblock->entries[j].blockID == blockId && dirblock->entries[j].fileindex > fileIndex)
                 {
                     dirblock->entries[j].fileindex--;
                 }
             }
-            SIFS_updateblock(volumename, i, dirblock, header->blocksize);
+            SIFS_updateblock(volumename, i, dirblock, 0);
+            free(dirblock);
+        }
+    }
+    for (int j = 0; j < dir->nentries; j++)
+    {
+        if (dir->entries[j].blockID == blockId && dir->entries[j].fileindex > fileIndex)
+        {
+            dir->entries[j].fileindex--;
         }
     }
     SIFS_FILEBLOCK* fileblock = (SIFS_FILEBLOCK*)SIFS_getblock(volumename, blockId);
@@ -91,7 +99,10 @@ int SIFS_rmfile(const char *volumename, const char *pathname)
     {
         memcpy(fileblock->filenames[i], fileblock->filenames[i + 1], SIFS_MAX_NAME_LENGTH);
     }
+    // Clear the last name
+    memset(fileblock->filenames[fileblock->nfiles - 1], 0, SIFS_MAX_NAME_LENGTH);
     fileblock->nfiles--;
+
     if (fileblock->nfiles <= 0)
     {
         int nblocks = fileblock->length / header->blocksize + ((fileblock->length % header->blocksize == 0) ? 0 : 1);

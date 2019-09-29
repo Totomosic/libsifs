@@ -65,6 +65,10 @@ int SIFS_rmdir(const char *volumename, const char *dirname)
         SIFS_errno = SIFS_ENOTEMPTY;
         return 1;
     }
+    // Need to reset the name of the directory to be safe
+    memset(block->name, 0, SIFS_MAX_NAME_LENGTH);
+    SIFS_updateblock(volumename, dir->entries[index].blockID, block, 0);
+
     SIFS_freeblocks(volumename, dir->entries[index].blockID, 1);
     dir->modtime = time(NULL);
     for (int i = index; i < dir->nentries - 1; i++)
