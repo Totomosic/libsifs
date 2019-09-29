@@ -36,6 +36,9 @@ extern	int SIFS_dirinfo(const char *volumename, const char *pathname,
 extern	int SIFS_fileinfo(const char *volumename, const char *pathname,
 			  size_t *length, time_t *modtime);
 
+//	MOVE ALL UNUSED BLOCKS SO THAT THEY OCCUPY ONE CONTIGOUS CHUNK AT THE END OF THE VOLUME
+extern	int SIFS_defrag(const char *volumename);
+
 
 //  ON SUCCESS, EACH OF THE ABOVE FUNCTIONS RETURN 0.
 //  ON FAILURE, EACH FUNCTION RETURNS 1 AND SETS SIFS_errno

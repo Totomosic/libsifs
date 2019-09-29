@@ -101,6 +101,13 @@ int rmfile(const char* volume, int argc, char** argv)
     return 0;
 }
 
+int defrag(const char* volume, int argc, char** argv)
+{
+    SIFS_defrag(volume);
+    SIFS_perror(NULL);
+    return 0;
+}
+
 int main(int argcount, char *argvalue[])
 {
     if (argcount < 2)
@@ -144,6 +151,10 @@ int main(int argcount, char *argvalue[])
     if (strcmp(argvalue[1], "rmfile") == 0)
     {
         return rmfile(volume, argcount, argvalue);
+    }
+    if (strcmp(argvalue[1], "defrag") == 0)
+    {
+        return defrag(volume, argcount, argvalue);
     }
 
     return EXIT_SUCCESS;

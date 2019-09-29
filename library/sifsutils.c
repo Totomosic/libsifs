@@ -314,8 +314,13 @@ SIFS_BLOCKID SIFS_allocateblocks(const char* volumename, SIFS_BLOCKID nblocks, S
         if (bitmap[i] == SIFS_UNUSED)
         {
             bool available = true;
-            for (SIFS_BLOCKID j = 1; j < nblocks && (i + j < header->nblocks); j++)
+            for (SIFS_BLOCKID j = 1; j < nblocks; j++)
             {   
+                if (i + j >= header->nblocks)
+                {
+                    available = false;
+                    break;
+                }
                 if (bitmap[i + j] != SIFS_UNUSED)
                 {
                     available = false;
