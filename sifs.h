@@ -54,6 +54,7 @@ extern	int		SIFS_errno;
 #define	SIFS_ENOSPC	10	// No space left on volume
 #define	SIFS_ENOMEM	11	// Memory allocation failed
 #define	SIFS_ENOTYET	12	// Not yet implemented
+#define SIFS_ENOTEMPTY	13 // Directory not empty
 
 
 //  THE FUNCTION SIFS_perror() PRODUCES A MESSAGE ON THE STANDARD ERROR OUTPUT,

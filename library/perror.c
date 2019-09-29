@@ -17,6 +17,7 @@ char	*SIFS_errlist[] = {
 	"No space left on volume",			// SIFS_ENOSPC
 	"Memory allocation failed",			// SIFS_ENOMEM
         "Not yet implemented",                          // SIFS_ENOTYET
+	"Directory is not empty",			// SIFS_ENOTEMPTY
 };
 
 #define	SIFS_NERRS	(sizeof(SIFS_errlist) / sizeof(SIFS_errlist[0]))

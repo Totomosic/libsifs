@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "sifs.h"
+#include "../sifs.h"
 
 void free_entrynames(char** entrynames, uint32_t nentries)
 {

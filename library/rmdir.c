@@ -67,7 +67,7 @@ int SIFS_rmdir(const char *volumename, const char *dirname)
     {
         freesplit(result);
         free(volume);
-        SIFS_errno = SIFS_EMAXENTRY;
+        SIFS_errno = SIFS_ENOTEMPTY;
         return 1;
     }
     SIFS_freeblocks(volume, dir->entries[index].blockID, 1);
