@@ -69,7 +69,7 @@ int SIFS_writefile(const char *volumename, const char *pathname,
     else
     {
         SIFS_VOLUME_HEADER* header = SIFS_getvolumeheader(volumename);
-        int nblocks = nbytes / header->blocksize + ((nbytes % header->blocksize == 0) ? 0 : 1);
+        SIFS_BLOCKID nblocks = SIFS_calcnblocks(header, nbytes);
         SIFS_BLOCKID fileblockId = SIFS_allocateblocks(volumename, 1, SIFS_FILE);
         SIFS_BLOCKID datablockId = SIFS_allocateblocks(volumename, nblocks, SIFS_DATABLOCK);
         if (fileblockId == SIFS_ROOTDIR_BLOCKID || datablockId == SIFS_ROOTDIR_BLOCKID)
@@ -101,6 +101,7 @@ int SIFS_writefile(const char *volumename, const char *pathname,
         SIFS_updateblock(volumename, datablockId, dataPtr, nbytes);
         free(dataPtr);
     }
+    memset(block->filenames[block->nfiles], 0, SIFS_MAX_NAME_LENGTH);
     memcpy(block->filenames[block->nfiles++], filename, filenameLength);
     dir->entries[dir->nentries].blockID = blockId;
     dir->entries[dir->nentries++].fileindex = block->nfiles - 1;

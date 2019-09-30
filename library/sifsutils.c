@@ -137,6 +137,12 @@ SIFS_BIT* SIFS_getvolumebitmap(const char* volumename)
     return ptr;
 }
 
+SIFS_BLOCKID SIFS_calcnblocks(SIFS_VOLUME_HEADER* header, size_t nbytes)
+{
+    SIFS_BLOCKID nblocks = nbytes / header->blocksize + ((nbytes % header->blocksize == 0) ? 0 : 1);
+    return nblocks;
+}
+
 void SIFS_updatevolumebitmap(const char* volumename, const SIFS_BIT* bitmap, size_t length)
 {
     if (length == 0)

@@ -115,7 +115,7 @@ int main(int argcount, char *argvalue[])
         usage(argvalue[0]);
     }
     const char* volume = "volume";
-    if (SIFS_mkvolume(volume, 4096, 16) == 1 && SIFS_errno != SIFS_EEXIST)
+    if (SIFS_mkvolume(volume, 4096, 4096) == 1 && SIFS_errno != SIFS_EEXIST)
     {
         SIFS_perror(NULL);
     }

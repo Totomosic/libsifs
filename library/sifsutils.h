@@ -15,6 +15,7 @@ extern int SIFS_updatevolume(const char* volumename, size_t offset, const void* 
 
 extern SIFS_VOLUME_HEADER* SIFS_getvolumeheader(const char* volumename);
 extern SIFS_BIT* SIFS_getvolumebitmap(const char* volumename);
+extern SIFS_BLOCKID SIFS_calcnblocks(SIFS_VOLUME_HEADER* header, size_t nbytes);
 
 extern void SIFS_updatevolumebitmap(const char* volumename, const SIFS_BIT* bitmap, size_t length);
 extern void SIFS_updateblock(const char* volumename, SIFS_BLOCKID blockId, const void* data, size_t length);

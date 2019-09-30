@@ -105,7 +105,7 @@ int SIFS_rmfile(const char *volumename, const char *pathname)
 
     if (fileblock->nfiles <= 0)
     {
-        int nblocks = fileblock->length / header->blocksize + ((fileblock->length % header->blocksize == 0) ? 0 : 1);
+        SIFS_BLOCKID nblocks = SIFS_calcnblocks(header, fileblock->length);
         SIFS_freeblocks(volumename, fileblock->firstblockID, nblocks);
         SIFS_freeblocks(volumename, blockId, 1);
     }
