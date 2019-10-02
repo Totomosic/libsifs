@@ -31,7 +31,6 @@ int SIFS_rmfile(const char *volumename, const char *pathname)
     if (dir == NULL)
     {
         freesplit(result);
-        SIFS_errno = SIFS_ENOENT;
         return 1;
     }
     
@@ -116,6 +115,7 @@ int SIFS_rmfile(const char *volumename, const char *pathname)
         dir->entries[i] = dir->entries[i + 1];
     }
     dir->nentries--;
+    dir->modtime = time(NULL);
     SIFS_updateblock(volumename, dirblockId, dir, 0);
 
     freesplit(result);

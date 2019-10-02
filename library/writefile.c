@@ -27,7 +27,6 @@ int SIFS_writefile(const char *volumename, const char *pathname,
         SIFS_errno = SIFS_EINVAL;
         return 1;
     }
-
     // Find directory to place file in
     SIFS_BLOCKID dirblockId;
     SIFS_DIRBLOCK* dir = SIFS_getdir(volumename, result, count - 1, &dirblockId);
@@ -50,7 +49,7 @@ int SIFS_writefile(const char *volumename, const char *pathname,
         SIFS_errno = SIFS_EEXIST;
         return 1;
     }
-
+    
     unsigned char md5[MD5_BYTELEN];
     MD5_buffer(data, nbytes, md5);
     SIFS_BLOCKID blockId;
@@ -105,6 +104,7 @@ int SIFS_writefile(const char *volumename, const char *pathname,
     memcpy(block->filenames[block->nfiles++], filename, filenameLength);
     dir->entries[dir->nentries].blockID = blockId;
     dir->entries[dir->nentries++].fileindex = block->nfiles - 1;
+    dir->modtime = time(NULL);
 
     SIFS_updateblock(volumename, dirblockId, dir, 0);
     SIFS_updateblock(volumename, blockId, block, 0);

@@ -6,7 +6,7 @@
 // make a new directory within an existing volume
 int SIFS_mkdir(const char *volumename, const char *dirname)
 {
-    if (volumename == NULL || dirname == NULL || strlen(dirname) == 0 || strlen(dirname) >= SIFS_MAX_NAME_LENGTH)
+    if (volumename == NULL || dirname == NULL || strlen(dirname) == 0)
     {
         SIFS_errno = SIFS_EINVAL;
         return 1;
@@ -26,7 +26,7 @@ int SIFS_mkdir(const char *volumename, const char *dirname)
         return 1;
     }
     char* newdirname = dirnames[dircount - 1];
-    if (*newdirname == '.')
+    if ((strlen(newdirname) == 1 && *newdirname == '.') || strlen(newdirname) >= SIFS_MAX_NAME_LENGTH)
     {
         SIFS_errno = SIFS_EINVAL;
         freesplit(dirnames);

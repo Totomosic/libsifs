@@ -36,7 +36,9 @@ int SIFS_readfile(const char *volumename, const char *pathname,
         SIFS_errno = SIFS_ENOMEM;
         return 1;
     }
-    void* datablock = SIFS_getblock(volumename, fileblock->firstblockID);
+    SIFS_VOLUME_HEADER* header = SIFS_getvolumeheader(volumename);
+    void* datablock = SIFS_getblocks(volumename, fileblock->firstblockID, SIFS_calcnblocks(header, length));
+    free(header);
     memcpy(buffer, datablock, length);
     *data = buffer;
     if (nbytes != NULL)
