@@ -35,7 +35,7 @@ char** strsplit(const char* str, char delimeter, size_t* outCount)
         count++;
     }
 
-    char** vector = (char**)malloc(sizeof(char*) * (count + 2));
+    char** vector = (char**)malloc(sizeof(char*) * (count + 1));
     if (vector == NULL)
     {
         return NULL;
@@ -53,7 +53,6 @@ char** strsplit(const char* str, char delimeter, size_t* outCount)
         prev = ptr[i];
     }
 
-    vector[index] = NULL;
     if (outCount != NULL)
     {
         *outCount = count;

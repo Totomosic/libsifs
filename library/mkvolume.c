@@ -46,6 +46,7 @@ int SIFS_mkvolume(const char *volumename, size_t blocksize, uint32_t nblocks)
     SIFS_DIRBLOCK	rootdir_block;
     memset(&rootdir_block, 0, sizeof rootdir_block);	// cleared to all zeroes
 
+
     rootdir_block.name[0]       = '\0';
     rootdir_block.modtime	= time(NULL);
     rootdir_block.nentries	= 0;

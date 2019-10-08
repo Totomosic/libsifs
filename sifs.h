@@ -12,10 +12,10 @@
 extern	int SIFS_mkvolume(const char *volumename, size_t blocksize, uint32_t nblocks);
 
 //  MAKE A NEW DIRECTORY WITHIN AN EXISTING VOLUME
-extern	int SIFS_mkdir(const char *volumename, const char *dirname);
+extern	int SIFS_mkdir(const char *volumename, const char *pathname);
 
 //  REMOVE AN EXISTING DIRECTORY FROM AN EXISTING VOLUME
-extern	int SIFS_rmdir(const char *volumename, const char *dirname);
+extern	int SIFS_rmdir(const char *volumename, const char *pathname);
 
 //  ADD A COPY OF A NEW FILE TO AN EXISTING VOLUME
 extern	int SIFS_writefile(const char *volumename, const char *pathname,

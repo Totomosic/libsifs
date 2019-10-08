@@ -3,16 +3,16 @@
 #include <time.h>
 
 // remove an existing directory from an existing volume
-int SIFS_rmdir(const char *volumename, const char *dirname)
+int SIFS_rmdir(const char *volumename, const char *pathname)
 {
-    if (volumename == NULL || dirname == NULL || strlen(dirname) == 0)
+    if (volumename == NULL || pathname == NULL || strlen(pathname) == 0)
     {
         SIFS_errno = SIFS_EINVAL;
         return 1;
     }
 
     size_t count;
-    char** result = strsplit(dirname, SIFS_DIR_DELIMETER, &count);
+    char** result = strsplit(pathname, SIFS_DIR_DELIMETER, &count);
     if (result == NULL)
     {
         SIFS_errno = SIFS_ENOMEM;

@@ -6,8 +6,8 @@
 
 #define	SIFS_MIN_BLOCKSIZE	1024
 
-#define	SIFS_MAX_NAME_LENGTH	256	// including the NULL byte
-#define	SIFS_MAX_ENTRIES	256	// for both directory and file entries
+#define	SIFS_MAX_NAME_LENGTH	32	// including the NULL byte
+#define	SIFS_MAX_ENTRIES	24	// for both directory and file entries
 
 #define SIFS_UNUSED		'u'
 #define SIFS_DIR		'd'

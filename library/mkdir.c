@@ -4,16 +4,16 @@
 #include <string.h>
 
 // make a new directory within an existing volume
-int SIFS_mkdir(const char *volumename, const char *dirname)
+int SIFS_mkdir(const char *volumename, const char *pathname)
 {
-    if (volumename == NULL || dirname == NULL || strlen(dirname) == 0)
+    if (volumename == NULL || pathname == NULL || strlen(pathname) == 0)
     {
         SIFS_errno = SIFS_EINVAL;
         return 1;
     }
 
     size_t dircount;
-    char** dirnames = strsplit(dirname, SIFS_DIR_DELIMETER, &dircount);
+    char** dirnames = strsplit(pathname, SIFS_DIR_DELIMETER, &dircount);
     if (dirnames == NULL)
     {
         SIFS_errno = SIFS_ENOMEM;
