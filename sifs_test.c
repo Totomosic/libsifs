@@ -79,14 +79,17 @@ int readfile(const char* volume, int argc, char** argv)
 {
     void* data;
     size_t length;
-    SIFS_readfile(volume, argv[2], &data, &length);
+    int result = SIFS_readfile(volume, argv[2], &data, &length);
     SIFS_perror(NULL);
-    char* buffer = (char*)malloc(length + 1);
-    memcpy(buffer, data, length);
-    buffer[length] = '\0';
-    printf("%s\n", buffer);
-    free(buffer);
-    free(data);
+    if (result == SIFS_SUCCESS)
+    {
+        char* buffer = (char*)malloc(length + 1);
+        memcpy(buffer, data, length);
+        buffer[length] = '\0';
+        printf("%s\n", buffer);
+        free(buffer);
+        free(data);
+    }
     return 0;
 }
 

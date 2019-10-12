@@ -4,7 +4,7 @@
 void SIFS_ls(const char* volumename, const char* dirname)
 {
     size_t count;
-    char** result = strsplit(dirname, SIFS_DIR_DELIMETER, &count);
+    char** result = strsplit(dirname, SIFS_DIR_DELIMITER, &count);
 
     SIFS_DIRBLOCK* dir = SIFS_getdir(volumename, result, count, NULL);
     if (dir != NULL)

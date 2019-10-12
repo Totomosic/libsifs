@@ -29,9 +29,9 @@ char	*SIFS_errlist[] = {
 void SIFS_perror(const char *prefix)
 {
     if(SIFS_errno >= SIFS_EOK && SIFS_errno < SIFS_NERRS) {
-	if(prefix != NULL && *prefix != '\0') {
-	    fprintf(stderr, "%s: ", prefix);
-	}
-	fprintf(stderr, "%s\n", SIFS_errlist[SIFS_errno]);
+		if(prefix != NULL && *prefix != '\0') {
+			fprintf(stderr, "%s: ", prefix);
+		}
+		fprintf(stderr, "%s\n", SIFS_errlist[SIFS_errno]);
     }
 }
