@@ -99,18 +99,18 @@ int SIFS_defrag(const char *volumename)
     if (volumename == NULL)
     {
         SIFS_errno = SIFS_EINVAL;
-        return 1;
+        return SIFS_ERROR;
     }
 
-    SIFS_VOLUME_HEADER* header = SIFS_getvolumeheader(volumename);
+    SIFS_VOLUME_HEADER header = SIFS_getvolumeheader(volumename);
     SIFS_BIT* bitmap = SIFS_getvolumebitmap(volumename);
-    if (header == NULL || bitmap == NULL)
+    if (bitmap == NULL)
     {
-        return 1;
+        return SIFS_ERROR;
     }
 
     SIFS_BLOCKID freeblockId = SIFS_ROOTDIR_BLOCKID;
-    for (SIFS_BLOCKID i = SIFS_ROOTDIR_BLOCKID + 1; i < header->nblocks; i++)
+    for (SIFS_BLOCKID i = SIFS_ROOTDIR_BLOCKID + 1; i < header.nblocks; i++)
     {
         if (bitmap[i] == SIFS_UNUSED && freeblockId == SIFS_ROOTDIR_BLOCKID)
         {
@@ -120,18 +120,18 @@ int SIFS_defrag(const char *volumename)
         {
             if (bitmap[i] == SIFS_FILE)
             {
-                move_fileblock(volumename, header, bitmap, i, freeblockId);
+                move_fileblock(volumename, &header, bitmap, i, freeblockId);
             }
             else if (bitmap[i] == SIFS_DIR)
             {
-                move_dirblock(volumename, header, bitmap, i, freeblockId);
+                move_dirblock(volumename, &header, bitmap, i, freeblockId);
             }
             else if (bitmap[i] == SIFS_DATABLOCK)
             {
                 SIFS_BLOCKID fileblockId;
-                SIFS_FILEBLOCK* fileblock = find_fileblock(volumename, header, bitmap, i, &fileblockId);
-                SIFS_BLOCKID nblocks = SIFS_calcnblocks(header, fileblock->length);
-                move_datablock(volumename, header, bitmap, i, nblocks, freeblockId, fileblock);
+                SIFS_FILEBLOCK* fileblock = find_fileblock(volumename, &header, bitmap, i, &fileblockId);
+                SIFS_BLOCKID nblocks = SIFS_calcnblocks(&header, fileblock->length);
+                move_datablock(volumename, &header, bitmap, i, nblocks, freeblockId, fileblock);
                 SIFS_updateblock(volumename, fileblockId, fileblock, 0);
                 free(fileblock);
             }
@@ -143,7 +143,6 @@ int SIFS_defrag(const char *volumename)
     }
 
     free(bitmap);
-    free(header);
     SIFS_errno = SIFS_EOK;
-    return 0;
+    return SIFS_OK;
 }

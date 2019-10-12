@@ -9,7 +9,7 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
     if (volumename == NULL || pathname == NULL || strlen(pathname) == 0)
     {
         SIFS_errno = SIFS_EINVAL;
-        return 1;
+        return SIFS_ERROR;
     }
 
     size_t dircount;
@@ -17,20 +17,20 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
     if (dirnames == NULL)
     {
         SIFS_errno = SIFS_ENOMEM;
-        return 1;
+        return SIFS_ERROR;
     }
     if (dircount == 0)
     {
         SIFS_errno = SIFS_EINVAL;
         freesplit(dirnames);
-        return 1;
+        return SIFS_ERROR;
     }
     char* newdirname = dirnames[dircount - 1];
     if ((strlen(newdirname) == 1 && *newdirname == '.') || strlen(newdirname) >= SIFS_MAX_NAME_LENGTH)
     {
         SIFS_errno = SIFS_EINVAL;
         freesplit(dirnames);
-        return 1;
+        return SIFS_ERROR;
     }
 
     SIFS_BLOCKID dirblockId;
@@ -38,21 +38,21 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
     if (dirblock == NULL)
     {
         freesplit(dirnames);
-        return 1;
+        return SIFS_ERROR;
     }
     if (dirblock->nentries >= SIFS_MAX_ENTRIES)
     {
         freesplit(dirnames);
         free(dirblock);
         SIFS_errno = SIFS_EMAXENTRY;
-        return 1;
+        return SIFS_ERROR;
     }
     if (SIFS_hasentry(volumename, dirblock, newdirname))
     {
         freesplit(dirnames);
         free(dirblock);
         SIFS_errno = SIFS_EEXIST;
-        return 1;
+        return SIFS_ERROR;
     }
     SIFS_BLOCKID newBlockId = SIFS_allocateblocks(volumename, 1, SIFS_DIR);
     if (newBlockId == SIFS_ROOTDIR_BLOCKID)
@@ -60,7 +60,7 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
         freesplit(dirnames);
         free(dirblock);
         SIFS_errno = SIFS_ENOSPC;
-        return 1;
+        return SIFS_ERROR;
     }
     dirblock->modtime = time(NULL);
     dirblock->entries[dirblock->nentries++].blockID = newBlockId;
@@ -76,5 +76,5 @@ int SIFS_mkdir(const char *volumename, const char *pathname)
     free(dirblock);
     freesplit(dirnames);
     SIFS_errno = SIFS_EOK;
-    return 0;
+    return SIFS_OK;
 }

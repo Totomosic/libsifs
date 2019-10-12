@@ -7,13 +7,14 @@
 extern char** strsplit(const char* str, char delimeter, size_t* outCount);
 extern void freesplit(char** strsplitresult);
 
+extern int SIFS_readvolumeptr(const char* volumename, void* data, size_t offset, size_t length);
 // Returns pointer to volume contents or NULL if it does not exist.
 // Pointer should be freed when finished with
 extern void* SIFS_readvolume(const char* volumename, size_t offset, size_t length);
 // Updates volume's contents
 extern int SIFS_updatevolume(const char* volumename, size_t offset, const void* data, size_t nbytes);
 
-extern SIFS_VOLUME_HEADER* SIFS_getvolumeheader(const char* volumename);
+extern SIFS_VOLUME_HEADER SIFS_getvolumeheader(const char* volumename);
 extern SIFS_BIT* SIFS_getvolumebitmap(const char* volumename);
 extern SIFS_BLOCKID SIFS_calcnblocks(SIFS_VOLUME_HEADER* header, size_t nbytes);
 

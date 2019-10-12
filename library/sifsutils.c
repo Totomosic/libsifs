@@ -66,43 +66,50 @@ void freesplit(char** strsplitresult)
     free(strsplitresult - 1);
 }
 
-void* SIFS_readvolume(const char* volumename, size_t offset, size_t length)
+int SIFS_readvolumeptr(const char* volumename, void* data, size_t offset, size_t length)
 {
     struct stat fStat;
     if (stat(volumename, &fStat) != 0)
     {
         SIFS_errno = SIFS_ENOVOL;
-        return NULL;
+        return SIFS_ERROR;
     }
     FILE* file = fopen(volumename, "rb");
     if (file == NULL)
     {
         SIFS_errno = SIFS_ENOVOL;
-        return NULL;
+        return SIFS_ERROR;
     }
-    void* headerData = malloc(sizeof(SIFS_VOLUME_HEADER));
+    SIFS_VOLUME_HEADER header;
+    fread(&header, sizeof(SIFS_VOLUME_HEADER), 1, file);
+    fseek(file, offset, SEEK_SET);
+    fread(data, 1, length, file);
+    
+    size_t expectedLength = header.blocksize * header.nblocks + sizeof(SIFS_VOLUME_HEADER) + sizeof(SIFS_BIT) * header.nblocks;
+    if (fStat.st_size != expectedLength)
+    {
+        SIFS_errno = SIFS_ENOTVOL;
+        fclose(file);
+        return SIFS_ERROR;
+    }
+    fclose(file);
+    return SIFS_OK;
+}
+
+void* SIFS_readvolume(const char* volumename, size_t offset, size_t length)
+{
     void* data = malloc(length);
     if (data == NULL)
     {
         SIFS_errno = SIFS_ENOMEM;
         return NULL;
     }
-    fread(headerData, 1, sizeof(SIFS_VOLUME_HEADER), file);
-    fseek(file, offset, SEEK_SET);
-    fread(data, 1, length, file);
-    
-    SIFS_VOLUME_HEADER* header = (SIFS_VOLUME_HEADER*)headerData;
-    size_t expectedLength = header->blocksize * header->nblocks + sizeof(SIFS_VOLUME_HEADER) + sizeof(SIFS_BIT) * header->nblocks;
-    if (fStat.st_size != expectedLength)
+    int result = SIFS_readvolumeptr(volumename, data, offset, length);
+    if (result == SIFS_ERROR) 
     {
-        SIFS_errno = SIFS_ENOTVOL;
-        free(headerData);
         free(data);
-        fclose(file);
         return NULL;
     }
-    free(headerData);
-    fclose(file);
     return data;
 }
 
@@ -111,28 +118,25 @@ int SIFS_updatevolume(const char* volumename, size_t offset, const void* data, s
     FILE* file = fopen(volumename, "rb+");
     if (file == NULL)
     {
-        return 1;
+        return SIFS_ERROR;
     }
     fseek(file, offset, SEEK_SET);
     fwrite(data, 1, nbytes, file);
     fclose(file);
-    return 0;
+    return SIFS_OK;
 }
 
-SIFS_VOLUME_HEADER* SIFS_getvolumeheader(const char* volumename)
+SIFS_VOLUME_HEADER SIFS_getvolumeheader(const char* volumename)
 {
-    return (SIFS_VOLUME_HEADER*)SIFS_readvolume(volumename, 0, sizeof(SIFS_VOLUME_HEADER));
+    SIFS_VOLUME_HEADER header;
+    SIFS_readvolumeptr(volumename, &header, 0, sizeof(SIFS_VOLUME_HEADER));
+    return header;
 }
 
 SIFS_BIT* SIFS_getvolumebitmap(const char* volumename)
 {
-    SIFS_VOLUME_HEADER* header = SIFS_getvolumeheader(volumename);
-    if (header == NULL)
-    {
-        return NULL;
-    }
-    SIFS_BIT* ptr = (SIFS_BIT*)SIFS_readvolume(volumename, sizeof(SIFS_VOLUME_HEADER), header->nblocks * sizeof(SIFS_BIT));
-    free(header);
+    SIFS_VOLUME_HEADER header = SIFS_getvolumeheader(volumename);
+    SIFS_BIT* ptr = (SIFS_BIT*)SIFS_readvolume(volumename, sizeof(SIFS_VOLUME_HEADER), header.nblocks * sizeof(SIFS_BIT));
     return ptr;
 }
 
@@ -146,31 +150,21 @@ void SIFS_updatevolumebitmap(const char* volumename, const SIFS_BIT* bitmap, siz
 {
     if (length == 0)
     {
-        SIFS_VOLUME_HEADER* header = SIFS_getvolumeheader(volumename);
-        if (header == NULL)
-        {
-            return;
-        }
-        length = header->nblocks;
-        free(header);
+        SIFS_VOLUME_HEADER header = SIFS_getvolumeheader(volumename);
+        length = header.nblocks;
     }
     SIFS_updatevolume(volumename, sizeof(SIFS_VOLUME_HEADER), (void*)bitmap, length);
 }
 
 void SIFS_updateblock(const char* volumename, SIFS_BLOCKID blockIndex, const void* data, size_t length)
 {
-    SIFS_VOLUME_HEADER* header = SIFS_getvolumeheader(volumename);
-    if (header == NULL)
-    {
-        return;
-    }
+    SIFS_VOLUME_HEADER header = SIFS_getvolumeheader(volumename);
     if (length == 0)
     {
-        length = header->blocksize;
+        length = header.blocksize;
     }
-    size_t offset = sizeof(SIFS_VOLUME_HEADER) + header->nblocks * sizeof(SIFS_BIT) + blockIndex * header->blocksize;
+    size_t offset = sizeof(SIFS_VOLUME_HEADER) + header.nblocks * sizeof(SIFS_BIT) + blockIndex * header.blocksize;
     SIFS_updatevolume(volumename, offset, data, length);
-    free(header);
 }
 
 void* SIFS_getblock(const char* volumename, SIFS_BLOCKID blockIndex)
@@ -180,14 +174,9 @@ void* SIFS_getblock(const char* volumename, SIFS_BLOCKID blockIndex)
 
 void* SIFS_getblocks(const char* volumename, SIFS_BLOCKID first, SIFS_BLOCKID nblocks)
 {
-    SIFS_VOLUME_HEADER* header = SIFS_getvolumeheader(volumename);
-    if (header == NULL)
-    {
-        return NULL;
-    }
-    size_t offset = sizeof(SIFS_VOLUME_HEADER) + sizeof(SIFS_BIT) * header->nblocks + header->blocksize * first;
-    void* ptr = SIFS_readvolume(volumename, offset, header->blocksize * nblocks);
-    free(header);
+    SIFS_VOLUME_HEADER header = SIFS_getvolumeheader(volumename);
+    size_t offset = sizeof(SIFS_VOLUME_HEADER) + sizeof(SIFS_BIT) * header.nblocks + header.blocksize * first;
+    void* ptr = SIFS_readvolume(volumename, offset, header.blocksize * nblocks);
     return ptr;
 }
 
@@ -304,24 +293,20 @@ SIFS_BIT SIFS_getblocktype(const char* volumename, SIFS_BLOCKID blockIndex)
 
 SIFS_BLOCKID SIFS_allocateblocks(const char* volumename, SIFS_BLOCKID nblocks, SIFS_BIT type)
 {
-    SIFS_VOLUME_HEADER* header = SIFS_getvolumeheader(volumename);
-    if (header == NULL)
-    {
-        return SIFS_ROOTDIR_BLOCKID;
-    }
-    if (nblocks > header->nblocks)
+    SIFS_VOLUME_HEADER header = SIFS_getvolumeheader(volumename);
+    if (nblocks > header.nblocks)
     {
         return SIFS_ROOTDIR_BLOCKID;
     }
     SIFS_BIT* bitmap = SIFS_getvolumebitmap(volumename);
-    for (size_t i = SIFS_ROOTDIR_BLOCKID + 1; i < header->nblocks; i++)
+    for (size_t i = SIFS_ROOTDIR_BLOCKID + 1; i < header.nblocks; i++)
     {
         if (bitmap[i] == SIFS_UNUSED)
         {
             bool available = true;
             for (SIFS_BLOCKID j = 1; j < nblocks; j++)
             {   
-                if (i + j >= header->nblocks)
+                if (i + j >= header.nblocks)
                 {
                     available = false;
                     break;
@@ -338,15 +323,13 @@ SIFS_BLOCKID SIFS_allocateblocks(const char* volumename, SIFS_BLOCKID nblocks, S
                 {   
                     bitmap[i + j] = type;
                 }
-                SIFS_updatevolumebitmap(volumename, bitmap, header->nblocks);
+                SIFS_updatevolumebitmap(volumename, bitmap, header.nblocks);
                 free(bitmap);
-                free(header);
                 return i;
             }
         }
     }
     free(bitmap);
-    free(header);
     return SIFS_ROOTDIR_BLOCKID;
 }
 
@@ -396,14 +379,14 @@ bool SIFS_hasentry(const char* volumename, SIFS_DIRBLOCK* directory, const char*
 
 SIFS_FILEBLOCK* SIFS_getfileblock(const char* volumename, const void* md5, SIFS_BLOCKID* outBlockid)
 {
-    SIFS_VOLUME_HEADER* header = SIFS_getvolumeheader(volumename);
+    SIFS_VOLUME_HEADER header = SIFS_getvolumeheader(volumename);
     SIFS_BIT* bitmap = SIFS_getvolumebitmap(volumename);
-    if (header == NULL || bitmap == NULL)
+    if (bitmap == NULL)
     {
         SIFS_errno = SIFS_ENOVOL;
         return NULL;
     }
-    for (uint32_t i = 0; i < header->nblocks; i++)
+    for (uint32_t i = 0; i < header.nblocks; i++)
     {
         if (bitmap[i] == SIFS_FILE)
         {
@@ -414,14 +397,12 @@ SIFS_FILEBLOCK* SIFS_getfileblock(const char* volumename, const void* md5, SIFS_
                 {
                     *outBlockid = i;
                 }
-                free(header);
                 free(bitmap);
                 return block;
             }
             free(block);
         }
     }
-    free(header);
     free(bitmap);
     return NULL;
 }

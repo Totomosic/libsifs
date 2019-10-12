@@ -9,7 +9,7 @@ int SIFS_dirinfo(const char *volumename, const char *pathname,
     if (volumename == NULL || pathname == NULL)
     {
         SIFS_errno = SIFS_EINVAL;
-        return 1;
+        return SIFS_ERROR;
     }
 
     size_t count;
@@ -17,14 +17,14 @@ int SIFS_dirinfo(const char *volumename, const char *pathname,
     if (result == NULL)
     {
         SIFS_errno = SIFS_ENOMEM;
-        return 1;
+        return SIFS_ERROR;
     }
 
     SIFS_DIRBLOCK* dir = SIFS_getdir(volumename, result, count, NULL);
     if (dir == NULL)
     {
         freesplit(result);
-        return 1;
+        return SIFS_ERROR;
     }
     *nentries = dir->nentries;
     *modtime = dir->modtime;
@@ -55,5 +55,5 @@ int SIFS_dirinfo(const char *volumename, const char *pathname,
     free(dir);
     freesplit(result);
     SIFS_errno = SIFS_EOK;
-    return 0;
+    return SIFS_OK;
 }

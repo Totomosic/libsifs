@@ -9,14 +9,14 @@ int SIFS_mkvolume(const char *volumename, size_t blocksize, uint32_t nblocks)
 {
 //  ENSURE THAT RECEIVED PARAMETERS ARE VALID
     if(volumename == NULL || nblocks == 0 || blocksize < SIFS_MIN_BLOCKSIZE) {
-	SIFS_errno	= SIFS_EINVAL;
-	return 1;
+        SIFS_errno	= SIFS_EINVAL;
+        return SIFS_ERROR;
     }
 
 //  ENSURE THAT THE REQUESTED VOLUME DOES NOT ALREADY EXIST
     if(access(volumename, F_OK) == 0) {
-	SIFS_errno	= SIFS_EEXIST;
-	return 1;
+        SIFS_errno	= SIFS_EEXIST;
+        return SIFS_ERROR;
     }
 
 //  ATTEMPT TO CREATE THE NEW VOLUME - OPEN FOR WRITING
@@ -24,8 +24,8 @@ int SIFS_mkvolume(const char *volumename, size_t blocksize, uint32_t nblocks)
 
 //  VOLUME CREATION FAILED
     if(vol == NULL) {
-	SIFS_errno	= SIFS_ECREATE;
-	return 1;
+        SIFS_errno	= SIFS_ECREATE;
+        return SIFS_ERROR;
     }
 
 //  DEFINE AND INITIALISE VARIABLES FOR header, bitmap, and blocks
@@ -67,5 +67,5 @@ int SIFS_mkvolume(const char *volumename, size_t blocksize, uint32_t nblocks)
     fclose(vol);
 
 //  AND RETURN INDICATING SUCCESS
-    return 0;
+    return SIFS_OK;
 }

@@ -9,7 +9,7 @@ int SIFS_readfile(const char *volumename, const char *pathname,
     if (volumename == NULL || pathname == NULL || data == NULL)
     {
         SIFS_errno = SIFS_EINVAL;
-        return 1;
+        return SIFS_ERROR;
     }
 
     size_t count;
@@ -17,14 +17,14 @@ int SIFS_readfile(const char *volumename, const char *pathname,
     if (result == NULL)
     {
         SIFS_errno = SIFS_ENOMEM;
-        return 1;
+        return SIFS_ERROR;
     }
 
     SIFS_FILEBLOCK* fileblock = SIFS_getfile(volumename, result, count, NULL);
     if (fileblock == NULL)
     {
         freesplit(result);
-        return 1;
+        return SIFS_ERROR;
     }
 
     size_t length = fileblock->length;
@@ -34,11 +34,10 @@ int SIFS_readfile(const char *volumename, const char *pathname,
         freesplit(result);
         free(fileblock);
         SIFS_errno = SIFS_ENOMEM;
-        return 1;
+        return SIFS_ERROR;
     }
-    SIFS_VOLUME_HEADER* header = SIFS_getvolumeheader(volumename);
-    void* datablock = SIFS_getblocks(volumename, fileblock->firstblockID, SIFS_calcnblocks(header, length));
-    free(header);
+    SIFS_VOLUME_HEADER header = SIFS_getvolumeheader(volumename);
+    void* datablock = SIFS_getblocks(volumename, fileblock->firstblockID, SIFS_calcnblocks(&header, length));
     memcpy(buffer, datablock, length);
     *data = buffer;
     if (nbytes != NULL)
@@ -50,5 +49,5 @@ int SIFS_readfile(const char *volumename, const char *pathname,
     free(datablock);
     free(fileblock);
     SIFS_errno = SIFS_EOK;
-    return 0;
+    return SIFS_OK;
 }

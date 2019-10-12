@@ -16,6 +16,9 @@
 
 #define SIFS_ROOTDIR_BLOCKID	0
 
+#define SIFS_OK     0
+#define SIFS_ERROR  1
+
 typedef struct {
     size_t		blocksize;
     uint32_t		nblocks;

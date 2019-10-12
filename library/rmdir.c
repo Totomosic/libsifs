@@ -8,7 +8,7 @@ int SIFS_rmdir(const char *volumename, const char *pathname)
     if (volumename == NULL || pathname == NULL || strlen(pathname) == 0)
     {
         SIFS_errno = SIFS_EINVAL;
-        return 1;
+        return SIFS_ERROR;
     }
 
     size_t count;
@@ -16,7 +16,7 @@ int SIFS_rmdir(const char *volumename, const char *pathname)
     if (result == NULL)
     {
         SIFS_errno = SIFS_ENOMEM;
-        return 1;
+        return SIFS_ERROR;
     }
 
     // Get the parent directory
@@ -25,14 +25,14 @@ int SIFS_rmdir(const char *volumename, const char *pathname)
     if (dir == NULL)
     {
         freesplit(result);
-        return 1;
+        return SIFS_ERROR;
     }
     if (!SIFS_hasentry(volumename, dir, result[count - 1]))
     {
         freesplit(result);
         free(dir);
         SIFS_errno = SIFS_ENOENT;
-        return 1;
+        return SIFS_ERROR;
     }
     int index = -1;
     SIFS_DIRBLOCK* block = NULL;
@@ -55,7 +55,7 @@ int SIFS_rmdir(const char *volumename, const char *pathname)
         freesplit(result);
         free(dir);
         SIFS_errno = SIFS_ENOTDIR;
-        return 1;
+        return SIFS_ERROR;
     }
     if (block->nentries > 0)
     {
@@ -63,7 +63,7 @@ int SIFS_rmdir(const char *volumename, const char *pathname)
         free(block);
         free(dir);
         SIFS_errno = SIFS_ENOTEMPTY;
-        return 1;
+        return SIFS_ERROR;
     }
     // Need to reset the name of the directory to be safe
     memset(block->name, 0, SIFS_MAX_NAME_LENGTH);
@@ -83,5 +83,5 @@ int SIFS_rmdir(const char *volumename, const char *pathname)
     free(dir);
     free(block);
     SIFS_errno = SIFS_EOK;
-    return 0;
+    return SIFS_OK;
 }

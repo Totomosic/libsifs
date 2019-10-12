@@ -8,7 +8,7 @@ int SIFS_rmfile(const char *volumename, const char *pathname)
     if (volumename == NULL || pathname == NULL || strlen(pathname) == 0)
     {
         SIFS_errno = SIFS_EINVAL;
-        return 1;
+        return SIFS_ERROR;
     }
 
     size_t count;
@@ -16,13 +16,13 @@ int SIFS_rmfile(const char *volumename, const char *pathname)
     if (result == NULL)
     {
         SIFS_errno = SIFS_ENOMEM;
-        return 1;
+        return SIFS_ERROR;
     }
     if (count == 0)
     {
         freesplit(result);
         SIFS_errno = SIFS_EINVAL;
-        return 1;
+        return SIFS_ERROR;
     }
 
     char* filename = result[count - 1];
@@ -31,7 +31,7 @@ int SIFS_rmfile(const char *volumename, const char *pathname)
     if (dir == NULL)
     {
         freesplit(result);
-        return 1;
+        return SIFS_ERROR;
     }
     
     if (!SIFS_hasentry(volumename, dir, filename))
@@ -39,7 +39,7 @@ int SIFS_rmfile(const char *volumename, const char *pathname)
         freesplit(result);
         free(dir);
         SIFS_errno = SIFS_ENOENT;
-        return 1;
+        return SIFS_ERROR;
     }
     SIFS_BLOCKID blockId = SIFS_ROOTDIR_BLOCKID;
     int entryId = -1;
@@ -66,11 +66,11 @@ int SIFS_rmfile(const char *volumename, const char *pathname)
         freesplit(result);
         free(dir);
         SIFS_errno = SIFS_ENOTFILE;
-        return 1;
+        return SIFS_ERROR;
     }
-    SIFS_VOLUME_HEADER* header = SIFS_getvolumeheader(volumename);
+    SIFS_VOLUME_HEADER header = SIFS_getvolumeheader(volumename);
     SIFS_BIT* bitmap = SIFS_getvolumebitmap(volumename);
-    for (SIFS_BLOCKID i = 0; i < header->nblocks; i++)
+    for (SIFS_BLOCKID i = 0; i < header.nblocks; i++)
     {
         if (bitmap[i] == SIFS_DIR)
         {
@@ -104,7 +104,7 @@ int SIFS_rmfile(const char *volumename, const char *pathname)
 
     if (fileblock->nfiles <= 0)
     {
-        SIFS_BLOCKID nblocks = SIFS_calcnblocks(header, fileblock->length);
+        SIFS_BLOCKID nblocks = SIFS_calcnblocks(&header, fileblock->length);
         SIFS_freeblocks(volumename, fileblock->firstblockID, nblocks);
         SIFS_freeblocks(volumename, blockId, 1);
     }
@@ -120,8 +120,7 @@ int SIFS_rmfile(const char *volumename, const char *pathname)
 
     freesplit(result);
     free(dir);
-    free(header);
     free(bitmap);
     SIFS_errno = SIFS_EOK;
-    return 0;
+    return SIFS_OK;
 }
