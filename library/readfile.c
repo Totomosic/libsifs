@@ -39,7 +39,15 @@ int SIFS_readfile(const char *volumename, const char *pathname,
         SIFS_errno = SIFS_ENOMEM;
         return SIFS_FAILURE;
     }
-    SIFS_VOLUME_HEADER header = SIFS_getvolumeheader(volumename);
+    SIFS_VOLUME_HEADER header;
+    if (SIFS_getvolumeheader(volumename, &header) == SIFS_FAILURE)
+    {
+        // SIFS_errno set in SIFS_getvolumeheader()
+        free(buffer);
+        freesplit(result);
+        free(fileblock);
+        return SIFS_FAILURE;
+    }
     // Get a pointer to the data
     void* datablock = SIFS_getblocks(volumename, fileblock->firstblockID, SIFS_calcnblocks(&header, length));
     memcpy(buffer, datablock, length);

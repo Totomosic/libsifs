@@ -16,8 +16,8 @@ extern void* SIFS_readvolume(const char* volumename, size_t offset, size_t lengt
 // Updates volume's contents
 extern int SIFS_updatevolume(const char* volumename, size_t offset, const void* data, size_t nbytes);
 
-// Returns the header of the volume
-extern SIFS_VOLUME_HEADER SIFS_getvolumeheader(const char* volumename);
+// Returns the header of the volume, returns SIFS_FAILURE on failure
+extern int SIFS_getvolumeheader(const char* volumename, SIFS_VOLUME_HEADER* header);
 // Returns a pointer to the beginning of the bitmap for the volume
 extern SIFS_BIT* SIFS_getvolumebitmap(const char* volumename);
 // Calculates the number of blocks required to represent nbytes

@@ -71,6 +71,7 @@ char** strsplit(const char* str, char delimiter, size_t* outCount)
     if (nonNull != -1 && nonNull != 0) 
     {
         memmove(buffer, buffer + nonNull, strlength - nonNull);
+        buffer[strlength - nonNull] = '\0';
     }
 
     if (outCount != NULL)
@@ -154,16 +155,18 @@ int SIFS_updatevolume(const char* volumename, size_t offset, const void* data, s
     return SIFS_SUCCESS;
 }
 
-SIFS_VOLUME_HEADER SIFS_getvolumeheader(const char* volumename)
+int SIFS_getvolumeheader(const char* volumename, SIFS_VOLUME_HEADER* header)
 {
-    SIFS_VOLUME_HEADER header;
-    SIFS_readvolumeptr(volumename, &header, 0, sizeof(SIFS_VOLUME_HEADER));
-    return header;
+    return SIFS_readvolumeptr(volumename, header, 0, sizeof(SIFS_VOLUME_HEADER));
 }
 
 SIFS_BIT* SIFS_getvolumebitmap(const char* volumename)
 {
-    SIFS_VOLUME_HEADER header = SIFS_getvolumeheader(volumename);
+    SIFS_VOLUME_HEADER header;
+    if (SIFS_getvolumeheader(volumename, &header) == SIFS_FAILURE)
+    {
+        return NULL;
+    }
     SIFS_BIT* ptr = (SIFS_BIT*)SIFS_readvolume(volumename, sizeof(SIFS_VOLUME_HEADER), header.nblocks * sizeof(SIFS_BIT));
     return ptr;
 }
@@ -178,7 +181,11 @@ void SIFS_updatevolumebitmap(const char* volumename, const SIFS_BIT* bitmap, siz
 {
     if (length == 0)
     {
-        SIFS_VOLUME_HEADER header = SIFS_getvolumeheader(volumename);
+        SIFS_VOLUME_HEADER header;
+        if (SIFS_getvolumeheader(volumename, &header) == SIFS_FAILURE)
+        {
+            return;
+        }
         length = header.nblocks;
     }
     SIFS_updatevolume(volumename, sizeof(SIFS_VOLUME_HEADER), (void*)bitmap, length);
@@ -186,7 +193,11 @@ void SIFS_updatevolumebitmap(const char* volumename, const SIFS_BIT* bitmap, siz
 
 void SIFS_updateblock(const char* volumename, SIFS_BLOCKID blockIndex, const void* data, size_t length)
 {
-    SIFS_VOLUME_HEADER header = SIFS_getvolumeheader(volumename);
+    SIFS_VOLUME_HEADER header;
+    if (SIFS_getvolumeheader(volumename, &header) == SIFS_FAILURE)
+    {
+        return;
+    }
     if (length == 0)
     {
         length = header.blocksize;
@@ -202,7 +213,11 @@ void* SIFS_getblock(const char* volumename, SIFS_BLOCKID blockIndex)
 
 void* SIFS_getblocks(const char* volumename, SIFS_BLOCKID first, SIFS_BLOCKID nblocks)
 {
-    SIFS_VOLUME_HEADER header = SIFS_getvolumeheader(volumename);
+    SIFS_VOLUME_HEADER header;
+    if (SIFS_getvolumeheader(volumename, &header) == SIFS_FAILURE)
+    {
+        return NULL;
+    }
     size_t offset = sizeof(SIFS_VOLUME_HEADER) + sizeof(SIFS_BIT) * header.nblocks + header.blocksize * first;
     void* ptr = SIFS_readvolume(volumename, offset, header.blocksize * nblocks);
     return ptr;
@@ -338,7 +353,11 @@ SIFS_BIT SIFS_getblocktype(const char* volumename, SIFS_BLOCKID blockIndex)
 
 SIFS_BLOCKID SIFS_allocateblocks(const char* volumename, SIFS_BLOCKID nblocks, SIFS_BIT type)
 {
-    SIFS_VOLUME_HEADER header = SIFS_getvolumeheader(volumename);
+    SIFS_VOLUME_HEADER header;
+    if (SIFS_getvolumeheader(volumename, &header) == SIFS_FAILURE)
+    {
+        return SIFS_ROOTDIR_BLOCKID;
+    }
     if (nblocks > header.nblocks)
     {
         // Tried to allocate too many blocks
@@ -433,7 +452,11 @@ bool SIFS_hasentry(const char* volumename, SIFS_DIRBLOCK* directory, const char*
 
 SIFS_FILEBLOCK* SIFS_getfileblock(const char* volumename, const void* md5, SIFS_BLOCKID* outBlockid)
 {
-    SIFS_VOLUME_HEADER header = SIFS_getvolumeheader(volumename);
+    SIFS_VOLUME_HEADER header;
+    if (SIFS_getvolumeheader(volumename, &header) == SIFS_FAILURE)
+    {
+        return NULL;
+    }
     SIFS_BIT* bitmap = SIFS_getvolumebitmap(volumename);
     if (bitmap == NULL)
     {

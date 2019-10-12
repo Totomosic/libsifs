@@ -78,7 +78,14 @@ int SIFS_rmfile(const char *volumename, const char *pathname)
         SIFS_errno = SIFS_ENOTFILE;
         return SIFS_FAILURE;
     }
-    SIFS_VOLUME_HEADER header = SIFS_getvolumeheader(volumename);
+    SIFS_VOLUME_HEADER header;
+    if (SIFS_getvolumeheader(volumename, &header) == SIFS_FAILURE)
+    {
+        // SIFS_errno set in SIFS_getvolumeheader()
+        free(dir);
+        freesplit(result);
+        return SIFS_FAILURE;
+    }
     SIFS_BIT* bitmap = SIFS_getvolumebitmap(volumename);
     // Iterate through all directories in the volume and find those that reference this fileblock
     for (SIFS_BLOCKID i = 0; i < header.nblocks; i++)

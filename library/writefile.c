@@ -74,7 +74,15 @@ int SIFS_writefile(const char *volumename, const char *pathname,
     else
     {
         // No fileblock with the same md5, create a new one
-        SIFS_VOLUME_HEADER header = SIFS_getvolumeheader(volumename);
+        SIFS_VOLUME_HEADER header;
+        if (SIFS_getvolumeheader(volumename, &header) == SIFS_FAILURE)
+        {
+            // SIFS_errno set in SIFS_getvolumeheader()
+            freesplit(result);
+            free(dir);
+            free(block);
+            return SIFS_FAILURE;
+        }
         SIFS_BLOCKID nblocks = SIFS_calcnblocks(&header, nbytes);
         // Allocate a block to store the file metadata as well as enough blocks to fit the file's data
         SIFS_BLOCKID fileblockId = SIFS_allocateblocks(volumename, 1, SIFS_FILE);

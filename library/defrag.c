@@ -142,7 +142,12 @@ int SIFS_defrag(const char *volumename)
         return SIFS_FAILURE;
     }
 
-    SIFS_VOLUME_HEADER header = SIFS_getvolumeheader(volumename);
+    SIFS_VOLUME_HEADER header;
+    if (SIFS_getvolumeheader(volumename, &header) == SIFS_FAILURE)
+    {
+        // SIFS_errno set in SIFS_getvolumeheader()
+        return SIFS_FAILURE;
+    }
     SIFS_BIT* bitmap = SIFS_getvolumebitmap(volumename);
     if (bitmap == NULL)
     {
