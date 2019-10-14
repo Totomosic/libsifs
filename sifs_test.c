@@ -118,6 +118,21 @@ int defrag(const char* volume, int argc, char** argv)
     return 0;
 }
 
+int download(const char* volume, int argc, char** argv)
+{
+    void* data;
+    size_t nbytes;
+    int result = SIFS_readfile(volume, argv[2], &data, &nbytes);
+    SIFS_perror(NULL);
+    if (result == SIFS_SUCCESS)
+    {
+        FILE* f = fopen(argv[3], "wb");
+        fwrite(data, 1, nbytes, f);
+        fclose(f);
+    }
+    return 0;
+}
+
 int main(int argcount, char *argvalue[])
 {
     if (argcount < 2)
@@ -165,6 +180,10 @@ int main(int argcount, char *argvalue[])
     if (strcmp(argvalue[1], "defrag") == 0)
     {
         return defrag(volume, argcount, argvalue);
+    }
+    if (strcmp(argvalue[1], "download") == 0)
+    {
+        return download(volume, argcount, argvalue);
     }
 
     return EXIT_SUCCESS;

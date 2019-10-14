@@ -6,7 +6,7 @@
 int SIFS_writefile(const char *volumename, const char *pathname,
 		   void *data, size_t nbytes)
 {
-    if (volumename == NULL || pathname == NULL || data == NULL || nbytes == 0)
+    if (volumename == NULL || pathname == NULL || data == NULL || nbytes == 0 || strlen(pathname) == 0)
     {
         SIFS_errno = SIFS_EINVAL;
         return SIFS_FAILURE;
@@ -17,6 +17,12 @@ int SIFS_writefile(const char *volumename, const char *pathname,
     if (result == NULL)
     {
         SIFS_errno = SIFS_ENOMEM;
+        return SIFS_FAILURE;
+    }
+    if (count == 0)
+    {
+        SIFS_errno = SIFS_EINVAL;
+        freesplit(result);
         return SIFS_FAILURE;
     }
 

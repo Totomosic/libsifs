@@ -38,6 +38,16 @@ char** strsplit(const char* str, char delimiter, size_t* outCount)
         count++;
     }
 
+    // str only contains delimiter characters, return vector of empty string
+    if (count == 0)
+    {
+        *outCount = 0;
+        char** vector = (char**)malloc(sizeof(char*));
+        vector[0] = (char*)malloc(1 * sizeof(char));
+        vector[0][0] = '\0';
+        return vector;
+    }
+
     // Allocate memory to store vector of strings
     char** vector = (char**)malloc(sizeof(char*) * count);
     if (vector == NULL)

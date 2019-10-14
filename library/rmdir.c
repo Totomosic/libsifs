@@ -18,6 +18,13 @@ int SIFS_rmdir(const char *volumename, const char *pathname)
         SIFS_errno = SIFS_ENOMEM;
         return SIFS_FAILURE;
     }
+    if (count == 0)
+    {
+        // Invalid argument (tried to remove root directory?)
+        freesplit(result);
+        SIFS_errno = SIFS_EINVAL;
+        return SIFS_FAILURE;
+    }
     char* dirname = result[count - 1];
 
     // Get the parent directory
