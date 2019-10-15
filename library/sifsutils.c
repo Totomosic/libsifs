@@ -107,6 +107,11 @@ int SIFS_readvolumeptr(const char* volumename, void* data, size_t offset, size_t
         SIFS_errno = SIFS_ENOVOL;
         return SIFS_FAILURE;
     }
+    if (fStat.st_size < sizeof(SIFS_VOLUME_HEADER))
+    {
+        SIFS_errno = SIFS_ENOTVOL;
+        return SIFS_FAILURE;
+    }
     FILE* file = fopen(volumename, "rb");
     if (file == NULL)
     {
