@@ -20,7 +20,7 @@ void print_root(void)
 	char** log;
 	uint32_t nentries;
 	time_t modtime;
-	if (SIFS_dirinfo("volume", "\0", &log, &nentries, &modtime) == 1)
+	if (SIFS_dirinfo("volume", "", &log, &nentries, &modtime) == 1)
 	{
 		SIFS_perror(NULL);
 	}
@@ -41,7 +41,7 @@ void test_error_SIFS_EINVAL(void)
 {
 	printf("RUNNING TEST ERROR EINVAL\n");
 
-	int i = SIFS_mkdir(NULL, '\0');
+	int i = SIFS_mkdir(NULL, "");
 	if (i == 1 && SIFS_errno == SIFS_EINVAL)
 	{
 		printf("TEST PASSED\n");
