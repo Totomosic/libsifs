@@ -50,4 +50,3 @@ typedef struct {
     uint32_t		nfiles;		// n files with identical contents
     char		filenames[SIFS_MAX_ENTRIES][SIFS_MAX_NAME_LENGTH];
 } SIFS_FILEBLOCK;
-
