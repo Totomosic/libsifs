@@ -3,6 +3,9 @@
 
 #define SIFS_DIR_DELIMITER '/'
 
+#define SIFS_SUCCESS     0
+#define SIFS_FAILURE     1
+
 // Splits str based on delimiter into a vector of strings that do not include the delimiter (free with freesplit())
 extern char** strsplit(const char* str, char delimiter, size_t* outCount);
 // Correctly frees the result from strsplit

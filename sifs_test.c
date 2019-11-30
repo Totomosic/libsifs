@@ -3,19 +3,13 @@
 #include <string.h>
 #include <time.h>
 #include "sifs.h"
-#include "library/sifsext.h"
 #include <sys/stat.h>
+#include "library/sifsutils.h"
 
 void usage(const char* progname)
 {
     printf("Usage: %s program [args...]\n", progname);
     exit(EXIT_FAILURE);
-}
-
-int ls(const char* volume, int argc, char** argv)
-{
-    SIFS_ls(volume, argv[2]);
-    return 0;
 }
 
 int mymkdir(const char* volume, int argc, char** argv)
@@ -145,10 +139,6 @@ int main(int argcount, char *argvalue[])
         SIFS_perror(NULL);
     }
     
-    if (strcmp(argvalue[1], "ls") == 0)
-    {
-        return ls(volume, argcount, argvalue);
-    }
     if (strcmp(argvalue[1], "mkdir") == 0)
     {
         return mymkdir(volume, argcount, argvalue);

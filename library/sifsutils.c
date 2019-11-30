@@ -1,3 +1,7 @@
+//  CITS2002 Project 2 2019
+//  Name(s):             Jordan Morrison
+//  Student number(s):   22727621
+
 #include "sifsutils.h"
 #include <string.h>
 #include <stdio.h>

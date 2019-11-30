@@ -6,7 +6,7 @@
 int SIFS_writefile(const char *volumename, const char *pathname,
 		   void *data, size_t nbytes)
 {
-    if (volumename == NULL || pathname == NULL || data == NULL || nbytes == 0 || strlen(pathname) == 0)
+    if (volumename == NULL || pathname == NULL || data == NULL || strlen(pathname) == 0)
     {
         SIFS_errno = SIFS_EINVAL;
         return SIFS_FAILURE;
@@ -109,9 +109,6 @@ int SIFS_writefile(const char *volumename, const char *pathname,
             }
             return SIFS_FAILURE;
         }
-        // Get a pointer to the data to write to and copy data into them
-        void* dataPtr = SIFS_getblocks(volumename, datablockId, nblocks);
-        memcpy(dataPtr, data, nbytes);
         // Setup fileblock metadata
         SIFS_FILEBLOCK* fileblock = (SIFS_FILEBLOCK*)SIFS_getblock(volumename, fileblockId);
         fileblock->modtime = time(NULL);
@@ -121,9 +118,15 @@ int SIFS_writefile(const char *volumename, const char *pathname,
         fileblock->nfiles = 0;
         block = fileblock;
         blockId = fileblockId;
-        // Write the datablocks back into the volume
-        SIFS_updateblock(volumename, datablockId, dataPtr, nbytes);
-        free(dataPtr);
+        if (nblocks > 0)
+        {
+            // Get a pointer to the data to write to and copy data into them
+            void* dataPtr = SIFS_getblocks(volumename, datablockId, nblocks);
+            memcpy(dataPtr, data, nbytes);
+            // Write the datablocks back into the volume
+            SIFS_updateblock(volumename, datablockId, dataPtr, nbytes);
+            free(dataPtr);
+        }
     }
     // Set the filename that we are about to write to to 0s (could be in the same place a data from a previous file and therefore not null terminated correctly)
     // Copy filename into correct spot

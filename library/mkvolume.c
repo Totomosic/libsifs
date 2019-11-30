@@ -2,7 +2,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "sifs-internal.h"
+#include "sifsutils.h"
 
 // make a new volume
 int SIFS_mkvolume(const char *volumename, size_t blocksize, uint32_t nblocks)
